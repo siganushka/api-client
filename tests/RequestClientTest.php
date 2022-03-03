@@ -9,6 +9,7 @@ use Siganushka\ApiClient\RequestClient;
 use Siganushka\ApiClient\Tests\Mock\FooRequest;
 use Symfony\Component\HttpClient\Response\MockResponse;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class RequestClientTest extends TestCase
 {
@@ -16,9 +17,7 @@ class RequestClientTest extends TestCase
     {
         /** @var string */
         $body = json_encode(['message' => 'hello']);
-
-        $response = new MockResponse($body);
-        $response = MockResponse::fromRequest('GET', '/', [], $response);
+        $response = static::createMockResponseWithBody($body);
 
         $httpClient = $this->createMock(HttpClientInterface::class);
         $httpClient->expects(static::any())
@@ -32,5 +31,13 @@ class RequestClientTest extends TestCase
         $wrappedResponse = $client->send(FooRequest::class, ['foo' => 'test']);
         static::assertSame($response, $wrappedResponse->getRawResponse());
         static::assertSame($body, $wrappedResponse->getParsedBody());
+    }
+
+    public static function createMockResponseWithBody(string $body): ResponseInterface
+    {
+        $response = new MockResponse($body);
+        $response = MockResponse::fromRequest('GET', '/', [], $response);
+
+        return $response;
     }
 }

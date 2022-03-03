@@ -30,7 +30,7 @@ class FooRequest extends AbstractRequest
         ;
     }
 
-    public function configureOptions(OptionsResolver $resolver): void
+    protected function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setRequired('foo');
         $resolver->setDefault('bar', 123);
