@@ -39,6 +39,7 @@ abstract class AbstractConfiguration implements \ArrayAccess, ConfigurableOption
      *
      * @return mixed
      */
+    #[\ReturnTypeWillChange]
     public function offsetGet($offset)
     {
         if (!$this->offsetExists($offset)) {
