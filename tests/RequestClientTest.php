@@ -6,6 +6,7 @@ namespace Siganushka\ApiClient\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Siganushka\ApiClient\RequestClient;
+use Siganushka\ApiClient\Response\ResponseFactory;
 use Siganushka\ApiClient\Tests\Mock\FooRequest;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -15,7 +16,7 @@ class RequestClientTest extends TestCase
     {
         /** @var string */
         $body = json_encode(['message' => 'hello']);
-        $response = WrappedResponseTest::createMockResponse($body);
+        $response = ResponseFactory::createMockResponse($body);
 
         $httpClient = $this->createMock(HttpClientInterface::class);
         $httpClient->expects(static::any())
