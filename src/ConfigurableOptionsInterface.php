@@ -11,5 +11,5 @@ interface ConfigurableOptionsInterface
      *
      * @return array<string, mixed>
      */
-    public function resolveOptions(array $options = []): array;
+    public function resolveOptions(array $options): array;
 }
