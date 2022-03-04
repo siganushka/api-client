@@ -8,14 +8,17 @@ use PHPUnit\Framework\TestCase;
 use Siganushka\ApiClient\RequestClient;
 use Siganushka\ApiClient\Response\ResponseFactory;
 use Siganushka\ApiClient\Tests\Mock\FooRequest;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class RequestClientTest extends TestCase
 {
     public function testAll(): void
     {
+        $data = ['message' => 'hello'];
+
         /** @var string */
-        $body = json_encode(['message' => 'hello']);
+        $body = json_encode($data);
         $response = ResponseFactory::createMockResponse($body);
 
         $httpClient = $this->createMock(HttpClientInterface::class);
@@ -24,11 +27,13 @@ class RequestClientTest extends TestCase
             ->willReturn($response)
         ;
 
+        $cachePool = new FilesystemAdapter();
+
         $registry = RequestRegistryTest::createRequestRegistry();
-        $client = new RequestClient($httpClient, $registry);
+        $client = new RequestClient($httpClient, $cachePool, $registry);
 
         $wrappedResponse = $client->send(FooRequest::class, ['foo' => 'test']);
-        static::assertSame($response, $wrappedResponse->getRawResponse());
-        static::assertSame($body, $wrappedResponse->getParsedResponse());
+        static::assertSame($response->getContent(), $wrappedResponse->getRawResponse()->getContent());
+        static::assertSame($data, $wrappedResponse->getParsedResponse());
     }
 }

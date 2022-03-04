@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace Siganushka\ApiClient\Tests\Mock;
 
 use Siganushka\ApiClient\AbstractRequest;
+use Siganushka\ApiClient\CacheableResponseInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
  * @method array{ query: array{ foo: string, bar: int } } getOptions()
  */
-class FooRequest extends AbstractRequest
+class FooRequest extends AbstractRequest implements CacheableResponseInterface
 {
     /**
      * @param array<string, mixed> $options
@@ -39,6 +40,11 @@ class FooRequest extends AbstractRequest
 
     public function parseResponse(ResponseInterface $response)
     {
-        return $response->getContent();
+        return $response->toArray();
+    }
+
+    public function getCacheTtl(): int
+    {
+        return 60;
     }
 }

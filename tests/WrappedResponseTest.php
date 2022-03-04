@@ -16,13 +16,15 @@ class WrappedResponseTest extends TestCase
     {
         $request = new FooRequest();
 
+        $data = ['message' => 'hello'];
+
         /** @var string */
-        $body = json_encode(['message' => 'hello']);
+        $body = json_encode($data);
         $response = ResponseFactory::createMockResponse($body);
 
         $wrappedResponse = new WrappedResponse($request, $response);
         static::assertInstanceOf(WrappedResponseInterface::class, $wrappedResponse);
-        static::assertSame($response, $wrappedResponse->getRawResponse());
-        static::assertSame($body, $wrappedResponse->getParsedResponse());
+        static::assertSame($response->getContent(), $wrappedResponse->getRawResponse()->getContent());
+        static::assertSame($data, $wrappedResponse->getParsedResponse());
     }
 }

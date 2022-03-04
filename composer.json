@@ -13,7 +13,8 @@
         "php": ">=7.4",
         "symfony/http-client": "^5.4|^6.0",
         "symfony/options-resolver": "^5.4|^6.0",
-        "siganushka/registry-contracts": "dev-main"
+        "siganushka/registry-contracts": "dev-main",
+        "symfony/cache": "^5.4|^6.0"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^5.4|^6.0"
