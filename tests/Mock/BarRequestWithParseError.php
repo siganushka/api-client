@@ -6,20 +6,19 @@ namespace Siganushka\ApiClient\Tests\Mock;
 
 use Siganushka\ApiClient\AbstractRequest;
 use Siganushka\ApiClient\CacheableResponseInterface;
+use Siganushka\ApiClient\Exception\ParseResponseException;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 /**
- * @method array{ query: array{ foo: string, bar: int } } getOptions()
+ * @method array{ query: array{ bar: string } } getOptions()
  */
-class FooRequest extends AbstractRequest implements CacheableResponseInterface
+class BarRequestWithParseError extends AbstractRequest implements CacheableResponseInterface
 {
     /**
-     * @var array{ message: string }
+     * @var array{ error: string }
      */
-    public static $responseData = ['message' => 'hello.'];
-
-    private int $cacheTtl = 60;
+    public static $responseData = ['error' => 'invalid argument error.'];
 
     /**
      * @param array<string, mixed> $options
@@ -27,33 +26,29 @@ class FooRequest extends AbstractRequest implements CacheableResponseInterface
     protected function configureRequest(array $options): void
     {
         $query = [
-            'foo' => $options['foo'],
             'bar' => $options['bar'],
         ];
 
         $this
-            ->setMethod('GET')
-            ->setUrl('/foo')
+            ->setMethod('POST')
+            ->setUrl('/bar')
             ->setQuery($query)
         ;
     }
 
     protected function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setRequired('foo');
-        $resolver->setDefault('bar', 123);
-        $resolver->setAllowedTypes('bar', 'int');
+        $resolver->setDefault('bar', 'hello');
     }
 
     public function parseResponse(ResponseInterface $response)
     {
-        $this->cacheTtl = 3600;
-
-        return $response->toArray();
+        $data = $response->toArray();
+        throw new ParseResponseException($response, $data['error']);
     }
 
     public function getCacheTtl(): int
     {
-        return $this->cacheTtl;
+        return 60;
     }
 }

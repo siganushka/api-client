@@ -34,39 +34,31 @@ class RequestClient implements RequestClientInterface
             ? $this->createCacheItem($request, $name)
             : null;
 
-        if ($cacheItem instanceof CacheItemInterface && $cacheItem->isHit()) {
+        if ($cacheItem && $cacheItem->isHit()) {
             /** @var string */
             $body = $cacheItem->get();
+            $response = ResponseFactory::createMockResponse($body);
 
-            return $this->createWrappedResponse($request, $body, true);
+            return new WrappedResponse($response, $request->parseResponse($response), true);
         }
 
         $method = (string) $request->getMethod();
         $url = (string) $request->getUrl();
 
         $response = $this->httpClient->request($method, $url, $request->getOptions());
-        $body = $response->getContent();
+        $parsedResponse = $request->parseResponse($response);
 
-        if ($cacheItem instanceof CacheItemInterface) {
-            $cacheItem->set($body);
+        if ($cacheItem instanceof CacheItemInterface && $request instanceof CacheableResponseInterface) {
+            $cacheItem->set($response->getContent());
+            $cacheItem->expiresAfter($request->getCacheTtl());
             $this->cachePool->save($cacheItem);
         }
 
-        return $this->createWrappedResponse($request, $body);
+        return new WrappedResponse($response, $parsedResponse);
     }
 
     private function createCacheItem(RequestInterface $request, string $keyPrefix): CacheItemInterface
     {
-        $cacheItem = $this->cachePool->getItem(sprintf('%s_%s', $keyPrefix, md5(serialize($request))));
-        if ($request instanceof CacheableResponseInterface) {
-            $cacheItem->expiresAfter($request->getCacheTtl());
-        }
-
-        return $cacheItem;
-    }
-
-    private function createWrappedResponse(RequestInterface $request, string $body, bool $cached = false): WrappedResponseInterface
-    {
-        return new WrappedResponse($request, ResponseFactory::createMockResponse($body), $cached);
+        return $this->cachePool->getItem(sprintf('%s_%s', $keyPrefix, md5(serialize($request->getOptions()))));
     }
 }

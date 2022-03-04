@@ -6,6 +6,8 @@ namespace Siganushka\ApiClient\Tests;
 
 use PHPUnit\Framework\TestCase;
 use Siganushka\ApiClient\RequestRegistry;
+use Siganushka\ApiClient\RequestRegistryInterface;
+use Siganushka\ApiClient\Tests\Mock\BarRequestWithParseError;
 use Siganushka\ApiClient\Tests\Mock\FooRequest;
 use Siganushka\Contracts\Registry\Exception\ServiceNonExistingException;
 
@@ -28,10 +30,11 @@ class RequestRegistryTest extends TestCase
         $registry->get(\stdClass::class);
     }
 
-    public static function createRequestRegistry(): RequestRegistry
+    public static function createRequestRegistry(): RequestRegistryInterface
     {
         $requests = [
             new FooRequest(),
+            new BarRequestWithParseError(),
         ];
 
         return new RequestRegistry($requests);

@@ -8,14 +8,18 @@ use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class WrappedResponse implements WrappedResponseInterface
 {
-    protected RequestInterface $request;
     protected ResponseInterface $response;
+    /** @var mixed */
+    protected $parsedResponse;
     protected bool $cached;
 
-    public function __construct(RequestInterface $request, ResponseInterface $response, bool $cached = false)
+    /**
+     * @param mixed $parsedResponse
+     */
+    public function __construct(ResponseInterface $response, $parsedResponse, bool $cached = false)
     {
-        $this->request = $request;
         $this->response = $response;
+        $this->parsedResponse = $parsedResponse;
         $this->cached = $cached;
     }
 
@@ -26,7 +30,7 @@ class WrappedResponse implements WrappedResponseInterface
 
     public function getParsedResponse()
     {
-        return $this->request->parseResponse($this->response);
+        return $this->parsedResponse;
     }
 
     public function isCached(): bool
