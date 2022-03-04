@@ -28,12 +28,27 @@ class RequestClientTest extends TestCase
         ;
 
         $cachePool = new FilesystemAdapter();
-
         $registry = RequestRegistryTest::createRequestRegistry();
         $client = new RequestClient($httpClient, $cachePool, $registry);
 
-        $wrappedResponse = $client->send(FooRequest::class, ['foo' => 'test']);
+        $options = ['foo' => 'test'];
+        $wrappedResponse = $client->send(FooRequest::class, $options);
         static::assertSame($response->getContent(), $wrappedResponse->getRawResponse()->getContent());
         static::assertSame($data, $wrappedResponse->getParsedResponse());
+        static::assertFalse($wrappedResponse->isCached());
+
+        $wrappedResponse = $client->send(FooRequest::class, $options);
+        static::assertSame($response->getContent(), $wrappedResponse->getRawResponse()->getContent());
+        static::assertSame($data, $wrappedResponse->getParsedResponse());
+        static::assertTrue($wrappedResponse->isCached());
+
+        $options = ['foo' => 'test2'];
+        $wrappedResponse = $client->send(FooRequest::class, $options);
+        static::assertSame($response->getContent(), $wrappedResponse->getRawResponse()->getContent());
+        static::assertSame($data, $wrappedResponse->getParsedResponse());
+        static::assertFalse($wrappedResponse->isCached());
+
+        // clear cache after run tests
+        $cachePool->clear();
     }
 }

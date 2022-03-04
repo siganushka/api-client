@@ -38,7 +38,7 @@ class RequestClient implements RequestClientInterface
             /** @var string */
             $body = $cacheItem->get();
 
-            return $this->createWrappedResponse($request, $body);
+            return $this->createWrappedResponse($request, $body, true);
         }
 
         $method = (string) $request->getMethod();
@@ -65,8 +65,8 @@ class RequestClient implements RequestClientInterface
         return $cacheItem;
     }
 
-    private function createWrappedResponse(RequestInterface $request, string $body): WrappedResponseInterface
+    private function createWrappedResponse(RequestInterface $request, string $body, bool $cached = false): WrappedResponseInterface
     {
-        return new WrappedResponse($request, ResponseFactory::createMockResponse($body));
+        return new WrappedResponse($request, ResponseFactory::createMockResponse($body), $cached);
     }
 }
