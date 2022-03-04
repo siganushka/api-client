@@ -29,6 +29,6 @@ class RequestClientTest extends TestCase
 
         $wrappedResponse = $client->send(FooRequest::class, ['foo' => 'test']);
         static::assertSame($response, $wrappedResponse->getRawResponse());
-        static::assertSame($body, $wrappedResponse->getParsedBody());
+        static::assertSame($body, $wrappedResponse->getParsedResponse());
     }
 }

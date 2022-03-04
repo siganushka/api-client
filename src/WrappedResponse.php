@@ -22,7 +22,7 @@ class WrappedResponse implements WrappedResponseInterface
         return $this->response;
     }
 
-    public function getParsedBody()
+    public function getParsedResponse()
     {
         return $this->request->parseResponse($this->response);
     }

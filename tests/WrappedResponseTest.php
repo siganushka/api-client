@@ -23,6 +23,6 @@ class WrappedResponseTest extends TestCase
         $wrappedResponse = new WrappedResponse($request, $response);
         static::assertInstanceOf(WrappedResponseInterface::class, $wrappedResponse);
         static::assertSame($response, $wrappedResponse->getRawResponse());
-        static::assertSame($body, $wrappedResponse->getParsedBody());
+        static::assertSame($body, $wrappedResponse->getParsedResponse());
     }
 }

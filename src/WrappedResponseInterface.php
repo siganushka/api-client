@@ -13,5 +13,5 @@ interface WrappedResponseInterface
     /**
      * @return mixed
      */
-    public function getParsedBody();
+    public function getParsedResponse();
 }
