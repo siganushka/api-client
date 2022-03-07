@@ -18,6 +18,8 @@ interface RequestInterface extends ConfigurableOptionsInterface
      */
     public function getOptions(): array;
 
+    public function getUniqueKey(): string;
+
     /**
      * @param array<string, mixed> $options
      */

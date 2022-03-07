@@ -32,7 +32,7 @@ class RequestClient implements RequestClientInterface
         $request->build($options);
 
         $cacheItem = $request instanceof CacheableResponseInterface
-            ? $this->createCacheItem($request, $name)
+            ? $this->cachePool->getItem($request->getUniqueKey())
             : null;
 
         if ($cacheItem && $cacheItem->isHit()) {
@@ -52,10 +52,5 @@ class RequestClient implements RequestClientInterface
         }
 
         return $parsedResponse;
-    }
-
-    private function createCacheItem(RequestInterface $request, string $keyPrefix): CacheItemInterface
-    {
-        return $this->cachePool->getItem(sprintf('%s_%s', $keyPrefix, md5(serialize($request->getOptions()))));
     }
 }

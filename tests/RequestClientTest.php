@@ -5,38 +5,43 @@ declare(strict_types=1);
 namespace Siganushka\ApiClient\Tests;
 
 use PHPUnit\Framework\TestCase;
-use Psr\Cache\CacheItemPoolInterface;
 use Siganushka\ApiClient\Exception\ParseResponseException;
 use Siganushka\ApiClient\RequestClient;
-use Siganushka\ApiClient\RequestClientInterface;
 use Siganushka\ApiClient\Response\ResponseFactory;
 use Siganushka\ApiClient\Tests\Mock\BarRequestWithParseError;
 use Siganushka\ApiClient\Tests\Mock\FooRequest;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class RequestClientTest extends TestCase
 {
     public function testAll(): void
     {
-        $response = static::createMockResponse(FooRequest::$responseData);
-
-        $httpClient = $this->createMock(HttpClientInterface::class);
-        $httpClient->expects(static::any())
-            ->method('request')
-            ->willReturn($response)
-        ;
-
+        $httpClient = $this->createHttpClientWithResponse(FooRequest::$responseData);
         $cachePool = new FilesystemAdapter();
-        $client = static::createRequestClient($httpClient, $cachePool);
+        $registry = RequestRegistryTest::createRequestRegistry();
+
+        $client = new RequestClient($httpClient, $cachePool, $registry);
 
         $options = ['foo' => 'test'];
+        $request = $registry->get(FooRequest::class);
+        $request->build($options);
+
+        $cacheItem = $cachePool->getItem($request->getUniqueKey());
+        static::assertFalse($cacheItem->isHit());
+
         $result = $client->send(FooRequest::class, $options);
         static::assertSame(FooRequest::$responseData, $result);
 
-        // clear cache after run tests
-        $cachePool->clear();
+        $cacheItem = $cachePool->getItem($request->getUniqueKey());
+        static::assertTrue($cacheItem->isHit());
+        static::assertSame(FooRequest::$responseData, $cacheItem->get());
+
+        $result = $client->send(FooRequest::class, $options);
+        static::assertSame(FooRequest::$responseData, $result);
+
+        // delete cache after run tests
+        $cachePool->deleteItem($request->getUniqueKey());
     }
 
     public function testParseResponseException(): void
@@ -44,35 +49,28 @@ class RequestClientTest extends TestCase
         $this->expectException(ParseResponseException::class);
         $this->expectExceptionMessage('invalid argument error');
 
-        $response = static::createMockResponse(BarRequestWithParseError::$responseData);
-
-        $httpClient = $this->createMock(HttpClientInterface::class);
-        $httpClient->expects(static::any())
-            ->method('request')
-            ->willReturn($response)
-        ;
-
-        $cachePool = new FilesystemAdapter();
-        $client = static::createRequestClient($httpClient, $cachePool);
-        $client->send(BarRequestWithParseError::class);
-    }
-
-    public static function createRequestClient(HttpClientInterface $httpClient, CacheItemPoolInterface $cachePool): RequestClientInterface
-    {
+        $httpClient = $this->createHttpClientWithResponse(BarRequestWithParseError::$responseData);
         $cachePool = new FilesystemAdapter();
         $registry = RequestRegistryTest::createRequestRegistry();
 
-        return new RequestClient($httpClient, $cachePool, $registry);
+        $client = new RequestClient($httpClient, $cachePool, $registry);
+        $client->send(BarRequestWithParseError::class);
     }
 
     /**
      * @param array<string, mixed> $data
      */
-    public static function createMockResponse(array $data): ResponseInterface
+    public function createHttpClientWithResponse(array $data): HttpClientInterface
     {
         /** @var string */
         $body = json_encode($data);
 
-        return ResponseFactory::createMockResponse($body);
+        $httpClient = $this->createMock(HttpClientInterface::class);
+        $httpClient->expects(static::any())
+            ->method('request')
+            ->willReturn(ResponseFactory::createMockResponse($body))
+        ;
+
+        return $httpClient;
     }
 }

@@ -42,6 +42,11 @@ abstract class AbstractRequest extends HttpOptions implements RequestInterface
         return $this->toArray();
     }
 
+    public function getUniqueKey(): string
+    {
+        return sprintf('%s_%s', static::class, md5(serialize($this->getOptions())));
+    }
+
     /**
      * @param array<int|string, mixed> $options
      */
