@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient;
 
+/**
+ * Http client decorated for api requests.
+ */
 interface RequestClientInterface
 {
     /**
