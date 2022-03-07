@@ -11,6 +11,8 @@ interface RequestClientInterface
 {
     /**
      * @param array<string, mixed> $options
+     *
+     * @return mixed
      */
-    public function send(string $name, array $options = []): WrappedResponseInterface;
+    public function send(string $name, array $options = []);
 }

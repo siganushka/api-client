@@ -32,21 +32,8 @@ class RequestClientTest extends TestCase
         $client = static::createRequestClient($httpClient, $cachePool);
 
         $options = ['foo' => 'test'];
-        $wrappedResponse = $client->send(FooRequest::class, $options);
-        static::assertSame($response->getContent(), $wrappedResponse->getRawResponse()->getContent());
-        static::assertSame(FooRequest::$responseData, $wrappedResponse->getParsedResponse());
-        static::assertFalse($wrappedResponse->isCached());
-
-        $wrappedResponse = $client->send(FooRequest::class, $options);
-        static::assertSame($response->getContent(), $wrappedResponse->getRawResponse()->getContent());
-        static::assertSame(FooRequest::$responseData, $wrappedResponse->getParsedResponse());
-        static::assertTrue($wrappedResponse->isCached());
-
-        $options = ['foo' => 'test2'];
-        $wrappedResponse = $client->send(FooRequest::class, $options);
-        static::assertSame($response->getContent(), $wrappedResponse->getRawResponse()->getContent());
-        static::assertSame(FooRequest::$responseData, $wrappedResponse->getParsedResponse());
-        static::assertFalse($wrappedResponse->isCached());
+        $result = $client->send(FooRequest::class, $options);
+        static::assertSame(FooRequest::$responseData, $result);
 
         // clear cache after run tests
         $cachePool->clear();
@@ -67,14 +54,7 @@ class RequestClientTest extends TestCase
 
         $cachePool = new FilesystemAdapter();
         $client = static::createRequestClient($httpClient, $cachePool);
-
-        $wrappedResponse = $client->send(BarRequestWithParseError::class);
-        static::assertSame($response->getContent(), $wrappedResponse->getRawResponse()->getContent());
-        static::assertFalse($wrappedResponse->isCached());
-
-        $wrappedResponse = $client->send(BarRequestWithParseError::class);
-        static::assertSame($response->getContent(), $wrappedResponse->getRawResponse()->getContent());
-        static::assertFalse($wrappedResponse->isCached());
+        $client->send(BarRequestWithParseError::class);
     }
 
     public static function createRequestClient(HttpClientInterface $httpClient, CacheItemPoolInterface $cachePool): RequestClientInterface

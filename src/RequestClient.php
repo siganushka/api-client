@@ -6,7 +6,6 @@ namespace Siganushka\ApiClient;
 
 use Psr\Cache\CacheItemInterface;
 use Psr\Cache\CacheItemPoolInterface;
-use Siganushka\ApiClient\Response\ResponseFactory;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class RequestClient implements RequestClientInterface
@@ -24,8 +23,10 @@ class RequestClient implements RequestClientInterface
 
     /**
      * @param array<string, mixed> $options
+     *
+     * @return mixed
      */
-    public function send(string $name, array $options = []): WrappedResponseInterface
+    public function send(string $name, array $options = [])
     {
         $request = $this->registry->get($name);
         $request->build($options);
@@ -35,11 +36,7 @@ class RequestClient implements RequestClientInterface
             : null;
 
         if ($cacheItem && $cacheItem->isHit()) {
-            /** @var string */
-            $body = $cacheItem->get();
-            $response = ResponseFactory::createMockResponse($body);
-
-            return new WrappedResponse($response, $request->parseResponse($response), true);
+            return $cacheItem->get();
         }
 
         $method = (string) $request->getMethod();
@@ -49,12 +46,12 @@ class RequestClient implements RequestClientInterface
         $parsedResponse = $request->parseResponse($response);
 
         if ($cacheItem instanceof CacheItemInterface && $request instanceof CacheableResponseInterface) {
-            $cacheItem->set($response->getContent());
+            $cacheItem->set($parsedResponse);
             $cacheItem->expiresAfter($request->getCacheTtl());
             $this->cachePool->save($cacheItem);
         }
 
-        return new WrappedResponse($response, $parsedResponse);
+        return $parsedResponse;
     }
 
     private function createCacheItem(RequestInterface $request, string $keyPrefix): CacheItemInterface
