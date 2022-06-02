@@ -11,11 +11,8 @@ class FooConfiguration extends AbstractConfiguration
 {
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setRequired(['foo', 'bar']);
-        $resolver->setDefault('baz', 65535);
-
-        $resolver->setAllowedTypes('foo', 'string');
-        $resolver->setAllowedTypes('bar', 'string');
-        $resolver->setAllowedTypes('baz', 'int');
+        $resolver->setRequired('foo');
+        $resolver->setDefault('bar', 123);
+        $resolver->setAllowedTypes('bar', 'int');
     }
 }
