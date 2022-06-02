@@ -19,11 +19,11 @@ abstract class AbstractConfiguration implements \ArrayAccess, ConfigurableOption
     private array $configs;
 
     /**
-     * @param array<int|string, mixed> $options
+     * @param array<int|string, mixed> $configs
      */
-    public function __construct(array $options = [])
+    public function __construct(array $configs = [])
     {
-        $this->configs = $this->resolveOptions($options);
+        $this->configs = $this->resolveOptions($configs);
     }
 
     /**

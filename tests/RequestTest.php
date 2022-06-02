@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Siganushka\ApiClient\Tests;
 
 use PHPUnit\Framework\TestCase;
+use Siganushka\ApiClient\Exception\ParseResponseException;
+use Siganushka\ApiClient\Response\ResponseFactory;
 use Siganushka\ApiClient\Tests\Mock\FooRequest;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
@@ -14,54 +16,55 @@ class RequestTest extends TestCase
 {
     public function testAll(): void
     {
-        $request = new FooRequest();
-        static::assertNull($request->getMethod());
-        static::assertNull($request->getUrl());
-        static::assertSame([], $request->getOptions());
+        $foo = new FooRequest();
 
-        $request->build(['foo' => 'test']);
-        static::assertSame('GET', $request->getMethod());
-        static::assertSame('/foo', $request->getUrl());
+        $resolved = $foo->resolveOptions(['a' => 'hello']);
+        static::assertSame('hello', $resolved['a']);
+        static::assertSame('world', $resolved['b']);
 
-        $options = $request->getOptions();
-        static::assertSame('test', $options['query']['foo']);
-        static::assertSame(123, $options['query']['bar']);
+        static::assertSame(FooRequest::$responseData, $foo->send(['a' => 'hello']));
     }
 
-    public function testWithOptions(): void
+    public function testWithParseResponseException(): void
     {
-        $request = new FooRequest();
-        $request->build(['foo' => 'test', 'bar' => 789]);
+        $this->expectException(ParseResponseException::class);
+        $this->expectExceptionCode(65535);
+        $this->expectExceptionMessage('invalid argument error');
 
-        $options = $request->getOptions();
-        static::assertSame('test', $options['query']['foo']);
-        static::assertSame(789, $options['query']['bar']);
+        $response = ResponseFactory::createMockResponseWithJson(FooRequest::$responseDataWithError);
+
+        $foo = new FooRequest();
+        $ref = new \ReflectionObject($foo);
+
+        $method = $ref->getMethod('parseResponse');
+        $method->setAccessible(true);
+        $method->invoke($foo, $response);
     }
 
     public function testMissingOptionsException(): void
     {
         $this->expectException(MissingOptionsException::class);
-        $this->expectExceptionMessage('The required option "foo" is missing');
+        $this->expectExceptionMessage('The required option "a" is missing');
 
-        $request = new FooRequest();
-        $request->build();
+        $foo = new FooRequest();
+        $foo->send();
     }
 
     public function testInvalidOptionsException(): void
     {
         $this->expectException(InvalidOptionsException::class);
-        $this->expectExceptionMessage('The option "bar" with value "aaa" is expected to be of type "int", but is of type "string"');
+        $this->expectExceptionMessage('The option "c" with value "aaa" is expected to be of type "int", but is of type "string"');
 
-        $request = new FooRequest();
-        $request->build(['foo' => 'test', 'bar' => 'aaa']);
+        $foo = new FooRequest();
+        $foo->send(['a' => 'hello', 'c' => 'aaa']);
     }
 
     public function testUndefinedOptionsException(): void
     {
         $this->expectException(UndefinedOptionsException::class);
-        $this->expectExceptionMessage('The option "baz" does not exist. Defined options are: "bar", "foo"');
+        $this->expectExceptionMessage('The option "d" does not exist. Defined options are: "a", "b", "c"');
 
-        $request = new FooRequest();
-        $request->build(['foo' => 'test', 'baz' => '123']);
+        $foo = new FooRequest();
+        $foo->send(['d' => 'xyz']);
     }
 }

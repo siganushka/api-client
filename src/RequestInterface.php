@@ -4,31 +4,14 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient;
 
-use Siganushka\ApiClient\Exception\ParseResponseException;
-use Symfony\Contracts\HttpClient\ResponseInterface;
-
-interface RequestInterface extends ConfigurableOptionsInterface
+interface RequestInterface extends ConfigurableOptionsAwareInterface
 {
-    public function getMethod(): ?string;
-
-    public function getUrl(): ?string;
-
     /**
-     * @return array<string, mixed>
-     */
-    public function getOptions(): array;
-
-    public function getUniqueKey(): string;
-
-    /**
-     * @param array<string, mixed> $options
-     */
-    public function build(array $options = []): void;
-
-    /**
-     * @return mixed
+     * Resolve options and sending request.
      *
-     * @throws ParseResponseException
+     * @param array<string, mixed> $options
+     *
+     * @return mixed
      */
-    public function parseResponse(ResponseInterface $response);
+    public function send(array $options = []);
 }

@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient;
 
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
 interface ConfigurableOptionsInterface
 {
     /**
-     * @param array<string, mixed> $options
+     * @param array<int|string, mixed> $options
      *
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      */
-    public function resolveOptions(array $options): array;
+    public function resolveOptions(array $options = []): array;
+
+    public function configureOptions(OptionsResolver $resolver): void;
 }

@@ -6,8 +6,10 @@ namespace Siganushka\ApiClient;
 
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-trait ConfigurableOptionsTrait
+trait ConfigurableOptionsAwareTrait
 {
+    private OptionsResolver $resolver;
+
     /**
      * @param array<int|string, mixed> $options
      *
@@ -15,9 +17,18 @@ trait ConfigurableOptionsTrait
      */
     public function resolveOptions(array $options = []): array
     {
-        $resolver = new OptionsResolver();
+        $resolver = $this->getResolver();
         $this->configureOptions($resolver);
 
         return $resolver->resolve($options);
+    }
+
+    public function getResolver(): OptionsResolver
+    {
+        if (!isset($this->resolver)) {
+            $this->resolver = new OptionsResolver();
+        }
+
+        return $this->resolver;
     }
 }

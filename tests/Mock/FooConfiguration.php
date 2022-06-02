@@ -9,10 +9,13 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class FooConfiguration extends AbstractConfiguration
 {
-    protected function configureOptions(OptionsResolver $resolver): void
+    public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setRequired('foo');
-        $resolver->setDefault('bar', 123);
-        $resolver->setAllowedTypes('bar', 'int');
+        $resolver->setRequired(['foo', 'bar']);
+        $resolver->setDefault('baz', 65535);
+
+        $resolver->setAllowedTypes('foo', 'string');
+        $resolver->setAllowedTypes('bar', 'string');
+        $resolver->setAllowedTypes('baz', 'int');
     }
 }

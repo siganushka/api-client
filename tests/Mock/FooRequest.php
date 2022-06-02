@@ -5,55 +5,63 @@ declare(strict_types=1);
 namespace Siganushka\ApiClient\Tests\Mock;
 
 use Siganushka\ApiClient\AbstractRequest;
-use Siganushka\ApiClient\CacheableResponseInterface;
+use Siganushka\ApiClient\Exception\ParseResponseException;
+use Siganushka\ApiClient\Response\ResponseFactory;
+use Symfony\Component\HttpClient\HttpOptions;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
-/**
- * @method array{ query: array{ foo: string, bar: int } } getOptions()
- */
-class FooRequest extends AbstractRequest implements CacheableResponseInterface
+class FooRequest extends AbstractRequest
 {
     /**
      * @var array{ message: string }
      */
-    public static $responseData = ['message' => 'hello.'];
-
-    private int $cacheTtl = 60;
+    public static $responseData = ['message' => 'hello world'];
 
     /**
-     * @param array<string, mixed> $options
+     * @var array{ err_code: int, err_msg: string }
      */
-    protected function configureRequest(array $options): void
+    public static $responseDataWithError = ['err_code' => 65535, 'err_msg' => 'invalid argument error.'];
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setRequired('a');
+        $resolver->setDefault('b', 'world');
+        $resolver->setDefined('c');
+
+        $resolver->setAllowedTypes('a', 'string');
+        $resolver->setAllowedTypes('b', 'string');
+        $resolver->setAllowedTypes('c', 'int');
+    }
+
+    protected function sendRequest(array $options): ResponseInterface
     {
         $query = [
-            'foo' => $options['foo'],
-            'bar' => $options['bar'],
+            'options_a' => $options['a'],
+            'options_b' => $options['b'],
         ];
 
-        $this
-            ->setMethod('GET')
-            ->setUrl('/foo')
-            ->setQuery($query)
-        ;
+        if (isset($options['c'])) {
+            $query['options_c'] = $options['c'];
+        }
+
+        $httpOptions = new HttpOptions();
+        $httpOptions->setQuery($query);
+
+        return ResponseFactory::createMockResponseWithJson(static::$responseData);
     }
 
-    protected function configureOptions(OptionsResolver $resolver): void
+    protected function parseResponse(ResponseInterface $response)
     {
-        $resolver->setRequired('foo');
-        $resolver->setDefault('bar', 123);
-        $resolver->setAllowedTypes('bar', 'int');
-    }
+        $parsedResponse = $response->toArray();
 
-    public function parseResponse(ResponseInterface $response)
-    {
-        $this->cacheTtl = 3600;
+        $errCode = (int) ($parsedResponse['err_code'] ?? 0);
+        $errMsg = (string) ($parsedResponse['err_msg'] ?? '');
 
-        return $response->toArray();
-    }
+        if (0 === $errCode) {
+            return $parsedResponse;
+        }
 
-    public function getCacheTtl(): int
-    {
-        return $this->cacheTtl;
+        throw new ParseResponseException($response, $errMsg, $errCode);
     }
 }

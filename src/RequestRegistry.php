@@ -9,7 +9,7 @@ use Siganushka\Contracts\Registry\ServiceRegistry;
 class RequestRegistry extends ServiceRegistry implements RequestRegistryInterface
 {
     /**
-     * @param iterable<int|string, RequestInterface> $requests
+     * @param RequestInterface[] $requests
      */
     public function __construct(iterable $requests = [])
     {

@@ -10,11 +10,9 @@
         }
     ],
     "require": {
-        "php": ">=7.4",
-        "symfony/cache": "^5.4|^6.0",
+        "siganushka/registry-contracts": "^0.1",
         "symfony/http-client": "^5.4|^6.0",
-        "symfony/options-resolver": "^5.4|^6.0",
-        "siganushka/registry-contracts": "^0.1"
+        "symfony/options-resolver": "^5.4|^6.0"
     },
     "require-dev": {
         "symfony/phpunit-bridge": "^5.4|^6.0"
@@ -28,5 +26,8 @@
         "psr-4": {
             "Siganushka\\ApiClient\\Tests\\": "tests/"
         }
+    },
+    "config": {
+        "sort-packages": true
     }
 }

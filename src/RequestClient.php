@@ -4,21 +4,28 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient;
 
-use Psr\Cache\CacheItemInterface;
-use Psr\Cache\CacheItemPoolInterface;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
-
 class RequestClient implements RequestClientInterface
 {
-    private HttpClientInterface $httpClient;
-    private CacheItemPoolInterface $cachePool;
     private RequestRegistryInterface $registry;
 
-    public function __construct(HttpClientInterface $httpClient, CacheItemPoolInterface $cachePool, RequestRegistryInterface $registry)
+    /**
+     * @var RequestExtensionInterface[]
+     */
+    private iterable $extensions;
+
+    /**
+     * @param RequestExtensionInterface[] $extensions
+     */
+    public function __construct(RequestRegistryInterface $registry, iterable $extensions = [])
     {
-        $this->httpClient = $httpClient;
-        $this->cachePool = $cachePool;
+        foreach ($extensions as $extension) {
+            if (!$extension instanceof RequestExtensionInterface) {
+                throw new \UnexpectedValueException(sprintf('Expected argument of type "%s", "%s" given', RequestExtensionInterface::class, get_debug_type($extension)));
+            }
+        }
+
         $this->registry = $registry;
+        $this->extensions = $extensions;
     }
 
     /**
@@ -29,28 +36,27 @@ class RequestClient implements RequestClientInterface
     public function send(string $name, array $options = [])
     {
         $request = $this->registry->get($name);
-        $request->build($options);
-
-        $cacheItem = $request instanceof CacheableResponseInterface
-            ? $this->cachePool->getItem($request->getUniqueKey())
-            : null;
-
-        if ($cacheItem && $cacheItem->isHit()) {
-            return $cacheItem->get();
+        foreach ($this->getExtensionsForRequest($request) as $extension) {
+            $extension->configureOptions($request->getResolver());
         }
 
-        $method = (string) $request->getMethod();
-        $url = (string) $request->getUrl();
+        return $request->send($options);
+    }
 
-        $response = $this->httpClient->request($method, $url, $request->getOptions());
-        $parsedResponse = $request->parseResponse($response);
-
-        if ($cacheItem instanceof CacheItemInterface && $request instanceof CacheableResponseInterface) {
-            $cacheItem->set($parsedResponse);
-            $cacheItem->expiresAfter($request->getCacheTtl());
-            $this->cachePool->save($cacheItem);
+    /**
+     * @return RequestExtensionInterface[]
+     */
+    public function getExtensionsForRequest(RequestInterface $request): iterable
+    {
+        $extensions = [];
+        foreach ($this->extensions as $extension) {
+            foreach ($extension::getExtendedRequests() as $requestClass) {
+                if ($request instanceof $requestClass) {
+                    $extensions[] = $extension;
+                }
+            }
         }
 
-        return $parsedResponse;
+        return $extensions;
     }
 }

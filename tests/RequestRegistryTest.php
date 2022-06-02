@@ -7,7 +7,7 @@ namespace Siganushka\ApiClient\Tests;
 use PHPUnit\Framework\TestCase;
 use Siganushka\ApiClient\RequestRegistry;
 use Siganushka\ApiClient\RequestRegistryInterface;
-use Siganushka\ApiClient\Tests\Mock\BarRequestWithParseError;
+use Siganushka\ApiClient\Tests\Mock\BarRequest;
 use Siganushka\ApiClient\Tests\Mock\FooRequest;
 use Siganushka\Contracts\Registry\Exception\ServiceNonExistingException;
 
@@ -21,7 +21,7 @@ class RequestRegistryTest extends TestCase
         static::assertInstanceOf(FooRequest::class, $request);
     }
 
-    public function testRequestNonExistingException(): void
+    public function testNonExistingException(): void
     {
         $this->expectException(ServiceNonExistingException::class);
         $this->expectExceptionMessage('Service "stdClass" for "Siganushka\ApiClient\RequestRegistry" does not exist');
@@ -34,7 +34,7 @@ class RequestRegistryTest extends TestCase
     {
         $requests = [
             new FooRequest(),
-            new BarRequestWithParseError(),
+            new BarRequest(),
         ];
 
         return new RequestRegistry($requests);

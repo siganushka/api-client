@@ -22,4 +22,19 @@ class ResponseFactory
 
         return $response;
     }
+
+    /**
+     * Creates Mock Response With Json.
+     *
+     * @param array<string, mixed> $data to json for Response body
+     * @param array<string, mixed> $info Mock Response info
+     */
+    public static function createMockResponseWithJson(array $data, array $info = []): ResponseInterface
+    {
+        /** @var string */
+        $json = json_encode($data);
+        $response = static::createMockResponse($json, $info);
+
+        return $response;
+    }
 }

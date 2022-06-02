@@ -4,60 +4,39 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient;
 
-use Symfony\Component\HttpClient\HttpOptions;
+use Siganushka\ApiClient\Exception\ParseResponseException;
+use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
+use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
-abstract class AbstractRequest extends HttpOptions implements RequestInterface
+abstract class AbstractRequest implements RequestInterface
 {
-    use ConfigurableOptionsTrait;
+    use ConfigurableOptionsAwareTrait;
 
-    private ?string $method = null;
-    private ?string $url = null;
-
-    protected function setMethod(string $method): self
-    {
-        $this->method = $method;
-
-        return $this;
-    }
-
-    protected function setUrl(string $url): self
-    {
-        $this->url = $url;
-
-        return $this;
-    }
-
-    public function getMethod(): ?string
-    {
-        return $this->method;
-    }
-
-    public function getUrl(): ?string
-    {
-        return $this->url;
-    }
-
-    public function getOptions(): array
-    {
-        return $this->toArray();
-    }
-
-    public function getUniqueKey(): string
-    {
-        return sprintf('%s_%s', static::class, md5(serialize($this->getOptions())));
-    }
-
-    /**
-     * @param array<int|string, mixed> $options
-     */
-    public function build(array $options = []): void
+    public function send(array $options = [])
     {
         $resolved = $this->resolveOptions($options);
-        $this->configureRequest($resolved);
+        $response = $this->sendRequest($resolved);
+
+        return $this->parseResponse($response);
     }
 
     /**
+     * Sending request.
+     *
      * @param array<int|string, mixed> $options
+     *
+     * @throws ClientExceptionInterface
+     * @throws ServerExceptionInterface
      */
-    abstract protected function configureRequest(array $options): void;
+    abstract protected function sendRequest(array $options): ResponseInterface;
+
+    /**
+     * Returns parsed response data.
+     *
+     * @throws ParseResponseException
+     *
+     * @return mixed
+     */
+    abstract protected function parseResponse(ResponseInterface $response);
 }
