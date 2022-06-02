@@ -20,4 +20,8 @@ trait ConfigurableOptionsTrait
 
         return $resolver->resolve($options);
     }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+    }
 }

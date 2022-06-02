@@ -23,6 +23,10 @@ trait ConfigurableOptionsAwareTrait
         return $resolver->resolve($options);
     }
 
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+    }
+
     public function getResolver(): OptionsResolver
     {
         if (!isset($this->resolver)) {
