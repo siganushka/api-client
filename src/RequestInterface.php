@@ -4,8 +4,15 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient;
 
-interface RequestInterface extends ConfigurableOptionsAwareInterface
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+interface RequestInterface extends ConfigurableOptionsInterface, HttpClientAwareInterface
 {
+    /**
+     * Returns request resolver.
+     */
+    public function getResolver(): OptionsResolver;
+
     /**
      * Resolve options and sending request.
      *

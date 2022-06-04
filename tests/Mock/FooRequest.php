@@ -6,7 +6,7 @@ namespace Siganushka\ApiClient\Tests\Mock;
 
 use Siganushka\ApiClient\AbstractRequest;
 use Siganushka\ApiClient\Exception\ParseResponseException;
-use Siganushka\ApiClient\Response\ResponseFactory;
+use Siganushka\ApiClient\RequestOptions;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -33,13 +33,32 @@ class FooRequest extends AbstractRequest
         $resolver->setAllowedTypes('c', 'int');
     }
 
-    protected function sendRequest(array $options): ResponseInterface
+    protected function configureRequest(RequestOptions $request, array $options): void
     {
-        return ResponseFactory::createMockResponseWithJson(static::$responseData);
+        $query = [
+            'options_a' => $options['a'],
+            'options_b' => $options['b'],
+        ];
+
+        if (isset($options['c'])) {
+            $query['options_c'] = $options['c'];
+        }
+
+        $request
+            ->setMethod('GET')
+            ->setUrl('/foo')
+            ->setQuery($query)
+        ;
     }
 
-    protected function parseResponse(ResponseInterface $response)
+    /**
+     * @return array{ message: string, err_code?: int, err_msg?: string }
+     */
+    protected function parseResponse(ResponseInterface $response): array
     {
+        /**
+         * @var array{ message: string, err_code?: int, err_msg?: string }
+         */
         $parsedResponse = $response->toArray();
 
         $errCode = (int) ($parsedResponse['err_code'] ?? 0);

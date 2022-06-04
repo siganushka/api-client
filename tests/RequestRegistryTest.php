@@ -4,21 +4,21 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient\Tests;
 
-use PHPUnit\Framework\TestCase;
 use Siganushka\ApiClient\RequestRegistry;
 use Siganushka\ApiClient\RequestRegistryInterface;
 use Siganushka\ApiClient\Tests\Mock\BarRequest;
 use Siganushka\ApiClient\Tests\Mock\FooRequest;
+use Siganushka\ApiClient\Tests\Mock\FooRequestOverrideResponse;
 use Siganushka\Contracts\Registry\Exception\ServiceNonExistingException;
 
-class RequestRegistryTest extends TestCase
+class RequestRegistryTest extends BaseTest
 {
     public function testAll(): void
     {
         $registry = static::createRequestRegistry();
 
-        $request = $registry->get(FooRequest::class);
-        static::assertInstanceOf(FooRequest::class, $request);
+        static::assertInstanceOf(FooRequest::class, $registry->get(FooRequest::class));
+        static::assertInstanceOf(BarRequest::class, $registry->get(BarRequest::class));
     }
 
     public function testNonExistingException(): void
@@ -34,6 +34,7 @@ class RequestRegistryTest extends TestCase
     {
         $requests = [
             new FooRequest(),
+            new FooRequestOverrideResponse(),
             new BarRequest(),
         ];
 

@@ -4,37 +4,70 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient;
 
-use Siganushka\ApiClient\Exception\ParseResponseException;
-use Symfony\Contracts\HttpClient\Exception\ClientExceptionInterface;
-use Symfony\Contracts\HttpClient\Exception\ServerExceptionInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
 abstract class AbstractRequest implements RequestInterface
 {
-    use ConfigurableOptionsAwareTrait;
+    use HttpClientAwareTrait;
+
+    private OptionsResolver $resolver;
+
+    /**
+     * @param array<int|string, mixed> $options
+     *
+     * @return array<int|string, mixed>
+     */
+    public function resolve(array $options = []): array
+    {
+        $resolver = $this->getResolver();
+        $this->configureOptions($resolver);
+
+        return $resolver->resolve($options);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+    }
+
+    public function getResolver(): OptionsResolver
+    {
+        if (!isset($this->resolver)) {
+            $this->resolver = new OptionsResolver();
+        }
+
+        return $this->resolver;
+    }
 
     public function send(array $options = [])
     {
-        $resolved = $this->resolveOptions($options);
-        $response = $this->sendRequest($resolved);
+        $request = new RequestOptions();
+
+        $resolved = $this->resolve($options);
+        $this->configureRequest($request, $resolved);
+
+        $response = $this->sendRequest($request);
 
         return $this->parseResponse($response);
     }
 
-    /**
-     * Sending request.
-     *
-     * @param array<int|string, mixed> $options
-     *
-     * @throws ClientExceptionInterface
-     * @throws ServerExceptionInterface
-     */
-    abstract protected function sendRequest(array $options): ResponseInterface;
+    protected function sendRequest(RequestOptions $request): ResponseInterface
+    {
+        $method = $request->getMethod();
+        $url = $request->getUrl();
+
+        return $this->httpClient->request($method, $url, $request->toArray());
+    }
 
     /**
-     * Returns parsed response data.
+     * Building request.
      *
-     * @throws ParseResponseException
+     * @param array<int|string, mixed> $options
+     */
+    abstract protected function configureRequest(RequestOptions $request, array $options): void;
+
+    /**
+     * Returns parsed response content.
      *
      * @return mixed
      */

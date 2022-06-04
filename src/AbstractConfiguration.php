@@ -23,7 +23,7 @@ abstract class AbstractConfiguration implements \ArrayAccess, ConfigurableOption
      */
     public function __construct(array $configs = [])
     {
-        $this->configs = $this->resolveOptions($configs);
+        $this->configs = $this->resolve($configs);
     }
 
     /**

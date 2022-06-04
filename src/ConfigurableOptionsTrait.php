@@ -13,15 +13,11 @@ trait ConfigurableOptionsTrait
      *
      * @return array<int|string, mixed>
      */
-    public function resolveOptions(array $options = []): array
+    public function resolve(array $options = []): array
     {
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
 
         return $resolver->resolve($options);
-    }
-
-    public function configureOptions(OptionsResolver $resolver): void
-    {
     }
 }
