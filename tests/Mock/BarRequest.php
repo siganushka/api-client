@@ -6,7 +6,6 @@ namespace Siganushka\ApiClient\Tests\Mock;
 
 use Siganushka\ApiClient\AbstractRequest;
 use Siganushka\ApiClient\Response\ResponseFactory;
-use Symfony\Component\HttpClient\HttpOptions;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -24,13 +23,6 @@ class BarRequest extends AbstractRequest
 
     protected function sendRequest(array $options): ResponseInterface
     {
-        $data = [
-            'message' => $options['foo_response_message'],
-        ];
-
-        $httpOptions = new HttpOptions();
-        $httpOptions->setBody($data);
-
         return ResponseFactory::createMockResponseWithJson(static::$responseData);
     }
 

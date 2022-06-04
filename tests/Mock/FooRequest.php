@@ -7,7 +7,6 @@ namespace Siganushka\ApiClient\Tests\Mock;
 use Siganushka\ApiClient\AbstractRequest;
 use Siganushka\ApiClient\Exception\ParseResponseException;
 use Siganushka\ApiClient\Response\ResponseFactory;
-use Symfony\Component\HttpClient\HttpOptions;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\HttpClient\ResponseInterface;
 
@@ -36,18 +35,6 @@ class FooRequest extends AbstractRequest
 
     protected function sendRequest(array $options): ResponseInterface
     {
-        $query = [
-            'options_a' => $options['a'],
-            'options_b' => $options['b'],
-        ];
-
-        if (isset($options['c'])) {
-            $query['options_c'] = $options['c'];
-        }
-
-        $httpOptions = new HttpOptions();
-        $httpOptions->setQuery($query);
-
         return ResponseFactory::createMockResponseWithJson(static::$responseData);
     }
 

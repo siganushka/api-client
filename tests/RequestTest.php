@@ -11,6 +11,7 @@ use Siganushka\ApiClient\Tests\Mock\FooRequest;
 use Symfony\Component\OptionsResolver\Exception\InvalidOptionsException;
 use Symfony\Component\OptionsResolver\Exception\MissingOptionsException;
 use Symfony\Component\OptionsResolver\Exception\UndefinedOptionsException;
+use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class RequestTest extends TestCase
 {
@@ -22,10 +23,16 @@ class RequestTest extends TestCase
         static::assertSame('hello', $resolved['a']);
         static::assertSame('world', $resolved['b']);
 
-        static::assertSame(FooRequest::$responseData, $foo->send(['a' => 'hello']));
+        $sendRequestRef = new \ReflectionMethod($foo, 'sendRequest');
+        $sendRequestRef->setAccessible(true);
+        static::assertInstanceOf(ResponseInterface::class, $response = $sendRequestRef->invoke($foo, $resolved));
+
+        $parseResponseRef = new \ReflectionMethod($foo, 'parseResponse');
+        $parseResponseRef->setAccessible(true);
+        static::assertSame(FooRequest::$responseData, $parseResponseRef->invoke($foo, $response));
     }
 
-    public function testWithParseResponseException(): void
+    public function testParseResponseException(): void
     {
         $this->expectException(ParseResponseException::class);
         $this->expectExceptionCode(65535);
@@ -34,11 +41,9 @@ class RequestTest extends TestCase
         $response = ResponseFactory::createMockResponseWithJson(FooRequest::$responseDataWithError);
 
         $foo = new FooRequest();
-        $ref = new \ReflectionObject($foo);
-
-        $method = $ref->getMethod('parseResponse');
-        $method->setAccessible(true);
-        $method->invoke($foo, $response);
+        $parseResponseRef = new \ReflectionMethod($foo, 'parseResponse');
+        $parseResponseRef->setAccessible(true);
+        $parseResponseRef->invoke($foo, $response);
     }
 
     public function testMissingOptionsException(): void
@@ -47,7 +52,7 @@ class RequestTest extends TestCase
         $this->expectExceptionMessage('The required option "a" is missing');
 
         $foo = new FooRequest();
-        $foo->send();
+        $foo->resolveOptions();
     }
 
     public function testInvalidOptionsException(): void
@@ -56,7 +61,7 @@ class RequestTest extends TestCase
         $this->expectExceptionMessage('The option "c" with value "aaa" is expected to be of type "int", but is of type "string"');
 
         $foo = new FooRequest();
-        $foo->send(['a' => 'hello', 'c' => 'aaa']);
+        $foo->resolveOptions(['a' => 'hello', 'c' => 'aaa']);
     }
 
     public function testUndefinedOptionsException(): void
@@ -65,6 +70,6 @@ class RequestTest extends TestCase
         $this->expectExceptionMessage('The option "d" does not exist. Defined options are: "a", "b", "c"');
 
         $foo = new FooRequest();
-        $foo->send(['d' => 'xyz']);
+        $foo->resolveOptions(['d' => 'xyz']);
     }
 }
