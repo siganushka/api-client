@@ -6,7 +6,7 @@ namespace Siganushka\ApiClient;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class ApiClient implements ApiClientInterface
+class RequestClient implements RequestClientInterface
 {
     private HttpClientInterface $httpClient;
     private RequestRegistryInterface $registry;

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient;
 
-interface ApiClientInterface
+/**
+ * Interface for request client.
+ */
+interface RequestClientInterface
 {
     /**
      * @param array<string, mixed> $options
