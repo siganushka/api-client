@@ -8,7 +8,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 trait HttpClientAwareTrait
 {
-    protected HttpClientInterface $httpClient;
+    private HttpClientInterface $httpClient;
 
     public function setHttpClient(HttpClientInterface $httpClient): void
     {

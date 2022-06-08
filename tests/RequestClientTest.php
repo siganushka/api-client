@@ -27,12 +27,12 @@ class RequestClientTest extends BaseTest
 
     public static function createRequestClient(HttpClientInterface $httpClient): RequestClientInterface
     {
-        $registry = RequestRegistryTest::createRequestRegistry();
+        $registry = RequestRegistryTest::createRequestRegistry($httpClient);
 
         $extensions = [
-            new FooResponseMessageExtension($httpClient, $registry),
+            new FooResponseMessageExtension($registry),
         ];
 
-        return new RequestClient($httpClient, $registry, $extensions);
+        return new RequestClient($registry, $extensions);
     }
 }

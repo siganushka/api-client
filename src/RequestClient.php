@@ -4,11 +4,8 @@ declare(strict_types=1);
 
 namespace Siganushka\ApiClient;
 
-use Symfony\Contracts\HttpClient\HttpClientInterface;
-
 class RequestClient implements RequestClientInterface
 {
-    private HttpClientInterface $httpClient;
     private RequestRegistryInterface $registry;
 
     /**
@@ -19,7 +16,7 @@ class RequestClient implements RequestClientInterface
     /**
      * @param RequestExtensionInterface[] $extensions
      */
-    public function __construct(HttpClientInterface $httpClient, RequestRegistryInterface $registry, iterable $extensions = [])
+    public function __construct(RequestRegistryInterface $registry, iterable $extensions = [])
     {
         foreach ($extensions as $extension) {
             if (!$extension instanceof RequestExtensionInterface) {
@@ -27,7 +24,6 @@ class RequestClient implements RequestClientInterface
             }
         }
 
-        $this->httpClient = $httpClient;
         $this->registry = $registry;
         $this->extensions = $extensions;
     }
@@ -42,10 +38,6 @@ class RequestClient implements RequestClientInterface
         $request = $this->registry->get($name);
         foreach ($this->getExtensionsForRequest($request) as $extension) {
             $extension->configureOptions($request->getResolver());
-        }
-
-        if ($request instanceof HttpClientAwareInterface) {
-            $request->setHttpClient($this->httpClient);
         }
 
         return $request->send($options);

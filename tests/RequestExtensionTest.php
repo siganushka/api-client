@@ -12,12 +12,12 @@ class RequestExtensionTest extends BaseTest
     public function testAll(): void
     {
         $httpClient = $this->createHttpClient();
-        $registry = RequestRegistryTest::createRequestRegistry();
+        $registry = RequestRegistryTest::createRequestRegistry($httpClient);
 
         $resolver = new OptionsResolver();
         static::assertSame([], $resolver->resolve());
 
-        $extension = new FooResponseMessageExtension($httpClient, $registry);
+        $extension = new FooResponseMessageExtension($registry);
         $extension->configureOptions($resolver);
 
         static::assertSame(['foo_response_message' => 'hello world'], $resolver->resolve());
