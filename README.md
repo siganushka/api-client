@@ -19,11 +19,12 @@ AbstractRequest::configureOptions(OptionsResolver $resolver): void;
 // Configure the request with resolved options
 AbstractRequest::configureRequest(RequestOptions $request, array $options): void;
 
-//  Parse the response data (ParseResponseException when there is an error)
+// Parse the response data (ParseResponseException when there is an error)
 AbstractRequest::parseResponse(ResponseInterface $response);
 ```
 
 Github get a user example:
+
 https://docs.github.com/cn/rest/users/users#get-a-user
 
 ```php
